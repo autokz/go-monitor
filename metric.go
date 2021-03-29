@@ -8,8 +8,8 @@ import (
 	"runtime/metrics"
 	"time"
 
+	pb "github.com/autokz/go-monitor/proto"
 	"github.com/google/uuid"
-	pb "github.com/autokz/go-monitor"
 	"google.golang.org/grpc"
 )
 
