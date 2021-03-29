@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option go_package = "metric_server/proto";
+
+package proto;
+
+service SendMetric {
+  rpc Send(Metrics) returns (OkStatus) {}
+}
+
+message Metrics {
+  string name = 1;
+  string uuid = 2;
+  int32 goroutine_count = 3;
+  uint64 memory = 4;
+  int32 lifetime = 5;
+}
+
+message OkStatus {
+  bool value = 1;
+}
