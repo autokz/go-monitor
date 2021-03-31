@@ -17,6 +17,8 @@ type config struct {
 	addr, port, dur, name, uuid string
 }
 
+var cfg config
+
 func getIpAddress (domain string) string {
     ips, _ := net.LookupIP(domain)
     for _, ip := range ips {
@@ -75,10 +77,13 @@ func startMetrics(cfg *config) {
 	}
 }
 
+func GetUuid() string {
+	return cfg.uuid
+}
+
 func Handle(addr, port, dur, name string) {
 	newUuid, _ := uuid.NewRandom()
 
-	var cfg config
 	cfg.addr = addr
 	cfg.port = port
 	cfg.dur = dur
