@@ -60,11 +60,11 @@ func startMetrics(cfg *config) {
 	conn := createGrpcConnect(cfg.addr, cfg.port)
 	client := pb.NewSendMetricClient(conn)
 	timeoutDuration := time.Duration(cfg.connectionTimeout) * time.Second
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
 
 	startTime := int32(time.Now().Unix())
 
 	for {
+		ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
 		go func (ctx context.Context, cancel context.CancelFunc) {
 			defer cancel()
 			log.Print("Send: ", cfg.name)
