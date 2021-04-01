@@ -15,6 +15,7 @@ import (
 
 type config struct {
 	addr, port, dur, name, uuid string
+	connectionTimeout int
 }
 
 var cfg config
@@ -58,21 +59,26 @@ func createGrpcConnect(address, port string) *grpc.ClientConn {
 func startMetrics(cfg *config) {
 	conn := createGrpcConnect(cfg.addr, cfg.port)
 	client := pb.NewSendMetricClient(conn)
-	ctx := context.Background()
+	timeoutDuration := time.Duration(cfg.connectionTimeout) * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
+
 	startTime := int32(time.Now().Unix())
 
 	for {
-		log.Print("Send: ", cfg.name)
-		_, err := client.Send(ctx, &pb.Metrics{
-			Name:           cfg.name,
-			Uuid:           cfg.uuid,
-			GoroutineCount: int32(runtime.NumGoroutine()),
-			Memory:         getMemory(),
-			Lifetime:       startTime,
-		})
-		if err != nil {
-			log.Print(err)
-		}
+		go func (ctx context.Context, cancel context.CancelFunc) {
+			defer cancel()
+			log.Print("Send: ", cfg.name)
+			_, err := client.Send(ctx, &pb.Metrics{
+				Name:           cfg.name,
+				Uuid:           cfg.uuid,
+				GoroutineCount: int32(runtime.NumGoroutine()),
+				Memory:         getMemory(),
+				Lifetime:       startTime,
+			})
+			if err != nil {
+				log.Print(err)
+			}
+		}(ctx, cancel)
 		time.Sleep(5 * time.Second)
 	}
 }
@@ -81,14 +87,16 @@ func GetUuid() string {
 	return cfg.uuid
 }
 
-func Handle(addr, port, dur, name string) {
+func Handle(addr, port, dur, name string, t int) {
 	newUuid, _ := uuid.NewRandom()
 
 	cfg.addr = addr
 	cfg.port = port
 	cfg.dur = dur
 	cfg.name = name
+	cfg.connectionTimeout =  t
 	cfg.uuid = newUuid.String()
+
 
 	go startMetrics(&cfg)
 }
