@@ -59,7 +59,7 @@ func createGrpcConnect(address, port string) *grpc.ClientConn {
 func startMetrics(cfg *config) {
 	conn := createGrpcConnect(cfg.addr, cfg.port)
 	client := pb.NewSendMetricClient(conn)
-	timeoutDuration := time.Duration(cfg.connectionTimeout) * time.Second
+	timeoutDuration := time.Duration(cfg.connectionTimeout) * time.Millisecond
 
 	startTime := int32(time.Now().Unix())
 
